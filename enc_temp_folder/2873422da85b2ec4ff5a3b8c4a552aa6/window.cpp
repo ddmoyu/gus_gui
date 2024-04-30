@@ -75,6 +75,12 @@ void window::showWindow()
 {
     int pos, width, height, abdWidth, abdHeight;
     get_windows_taskbar_info(pos, width, height, abdWidth, abdHeight);
+    qDebug() << "pos: " << pos;
+    qDebug() << "height: " << height;
+    qDebug() << "width: " << width;
+    qDebug() << "abdWidth: " << abdWidth;
+    qDebug() << "abdHeight: " << abdHeight;
+
     QPoint mousePos = QCursor::pos();
     QRect winRect   = this->rect();
 
@@ -88,6 +94,7 @@ void window::showWindow()
         {
             x = abdWidth - winRect.width();
         }
+        
         auto y = abdHeight - winRect.height();
         this->move(x, y);
     }
