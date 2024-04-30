@@ -23,20 +23,10 @@
     },
     {
       "hidden": true,
-      "name": "Qt-Default",
-      "inherits": "6.6.3_msvc2019_64",
-      "vendor": {
-        "qt-project.org/Default": {
-          "checksum": "PW7pBLYck5e4fjyY3HO0OOVEt9A="
-        }
-      }
-    },
-    {
-      "hidden": true,
       "name": "5.15.2_msvc2019_64",
       "inherits": "Qt",
       "environment": {
-        "QTDIR": "D:/Qt/5.15.2/msvc2019_64"
+        "QTDIR": "C:/QT/6.7.0/MSVC2019_64"
       },
       "architecture": {
         "strategy": "external",
@@ -45,7 +35,7 @@
       "generator": "Ninja",
       "vendor": {
         "qt-project.org/Version": {
-          "checksum": "jdxkXjFbDNY9PzCbbN4/ahUc+ew="
+          "checksum": "3shbHVJrlcDv2TJXpdSaZCJP/uU="
         }
       }
     },
@@ -54,7 +44,7 @@
       "name": "6.6.3_msvc2019_64",
       "inherits": "Qt",
       "environment": {
-        "QTDIR": "D:/Qt/6.6.3/msvc2019_64"
+        "QTDIR": "C:/QT/6.7.0/MSVC2019_64"
       },
       "architecture": {
         "strategy": "external",
@@ -63,14 +53,42 @@
       "generator": "Ninja",
       "vendor": {
         "qt-project.org/Version": {
-          "checksum": "mHEEYnVNJeBB25rHre+V4V5YOGc="
+          "checksum": "jwiXuAE7+Olb9Btl7i5OVQLr8cE="
+        }
+      }
+    },
+    {
+      "hidden": true,
+      "name": "Qt-Default",
+      "inherits": "6.7.0_msvc2019_64",
+      "vendor": {
+        "qt-project.org/Default": {
+          "checksum": "/LIi1Qk9rOuZl7aAva45VvwngbI="
+        }
+      }
+    },
+    {
+      "hidden": true,
+      "name": "6.6.3_msvc2019_64",
+      "inherits": "Qt",
+      "environment": {
+        "QTDIR": "C:/QT/6.7.0/MSVC2019_64"
+      },
+      "architecture": {
+        "strategy": "external",
+        "value": "x64"
+      },
+      "generator": "Ninja",
+      "vendor": {
+        "qt-project.org/Version": {
+          "checksum": "jwiXuAE7+Olb9Btl7i5OVQLr8cE="
         }
       }
     }
   ],
   "vendor": {
     "qt-project.org/Presets": {
-      "checksum": "BmWWyPO/Lt5WMd/l+Ts1BmOxlx8="
+      "checksum": "cs6ETlpNfsbNJweCaM6ZGWbahN0="
     }
   }
 }

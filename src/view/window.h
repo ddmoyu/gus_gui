@@ -3,6 +3,7 @@
 #include <QWidget>
 #include <QMenu>
 #include <QAction>
+#include <QListWidget>
 #include <QSystemTrayIcon>
 
 QT_BEGIN_NAMESPACE
@@ -24,7 +25,9 @@ private:
     Ui::window* ui;
 
     QSystemTrayIcon* m_tray{nullptr};
-    QMenu * m_tray_menu{nullptr};
+    QMenu* m_tray_menu{nullptr};
+
+    QListWidget* m_list;
 
     // 初始化 UI
     void initUi();
@@ -39,9 +42,9 @@ private:
     void addTaskbarMouseRightBtnHandle();
 
     // 显示视窗
-    void showWindow();
+    void showWindow(bool flag);
     // 关闭视窗
-    void closeWindow();
+    static void closeWindow();
 
     // 读取 git 用户
     void readGitUser();

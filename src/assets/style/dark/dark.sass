@@ -1,0 +1,46 @@
+@import "variables"
+
+#window
+	background-color: transparent
+
+	#main
+		background-color: #141414
+		border-radius: 10px
+
+		#wgt_winBar
+			#title
+				color: rgba(255, 255, 255, 0.85)
+				font-size: 14px
+		
+		#list
+			background-color: #1D1D1D
+			border: 1px solid rgb(48, 48, 48)
+			margin: 0 10px 10px
+
+			QScrollBar:vertical
+				width: 0px
+			QScrollBar:horizontal
+				height: 0px
+
+
+QListWidget::item
+	background-color: #1D1D1D
+
+	#u_avatar
+		min-width: 40px
+		max-width: 57px
+		border-radius: 20px
+	
+	#u_name
+		color: #D7D7D7
+		font-size: 14px
+
+	#u_email
+		color: #ADADAD
+		font-size: 12px
+	
+	&::hover
+		background-color: #2F2F2F
+
+	&::selected
+		background-color: #383838

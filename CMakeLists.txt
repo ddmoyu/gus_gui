@@ -22,10 +22,19 @@ target_sources(${PROJECT_NAME}
     PRIVATE
     "src/main.cpp"
     "src/utils/utils.h"
-    
     "src/view/window.h"
     "src/view/window.cpp"
     "src/view/window.ui"
+ "src/components/userItem.h" "src/components/addItem.h")
+
+include_directories(
+    ${PROJECT_SOURCE_DIR}/third_party/sass/include
+)
+
+target_link_directories(
+    ${PROJECT_NAME}
+    PRIVATE
+    ${PROJECT_SOURCE_DIR}/third_party/sass/lib
 )
 
 target_link_libraries(
@@ -35,4 +44,5 @@ target_link_libraries(
     Qt6::Gui
     Qt6::Widgets
     Qt6::Network
+    Sass
 )
