@@ -50,10 +50,27 @@
       <item row="0" column="0">
        <widget class="QWidget" name="wgt_winBar" native="true">
         <layout class="QGridLayout" name="gridLayout_2">
+         <item row="0" column="3">
+          <widget class="QToolButton" name="btn_hide">
+           <property name="text">
+            <string>-</string>
+           </property>
+           <property name="icon">
+            <iconset resource="../assets/assets.qrc">
+             <normaloff>:/images/minus.png</normaloff>:/images/minus.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>20</width>
+             <height>20</height>
+            </size>
+           </property>
+          </widget>
+         </item>
          <item row="0" column="1">
           <spacer name="horizontalSpacer">
            <property name="orientation">
-            <enum>Qt::Orientation::Horizontal</enum>
+            <enum>Qt::Horizontal</enum>
            </property>
            <property name="sizeHint" stdset="0">
             <size>
@@ -63,10 +80,20 @@
            </property>
           </spacer>
          </item>
-         <item row="0" column="2">
-          <widget class="QToolButton" name="btn_hide">
+         <item row="0" column="4">
+          <widget class="QToolButton" name="btn_close">
            <property name="text">
-            <string>-</string>
+            <string>x</string>
+           </property>
+           <property name="icon">
+            <iconset resource="../assets/assets.qrc">
+             <normaloff>:/images/close.png</normaloff>:/images/close.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>20</width>
+             <height>20</height>
+            </size>
            </property>
           </widget>
          </item>
@@ -77,10 +104,20 @@
            </property>
           </widget>
          </item>
-         <item row="0" column="3">
-          <widget class="QToolButton" name="btn_close">
+         <item row="0" column="2">
+          <widget class="QToolButton" name="btn_more">
            <property name="text">
-            <string>x</string>
+            <string>-</string>
+           </property>
+           <property name="icon">
+            <iconset resource="../assets/assets.qrc">
+             <normaloff>:/images/more.png</normaloff>:/images/more.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>20</width>
+             <height>20</height>
+            </size>
            </property>
           </widget>
          </item>
@@ -96,6 +133,8 @@
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="../assets/assets.qrc"/>
+ </resources>
  <connections/>
 </ui>
