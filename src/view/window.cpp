@@ -1,6 +1,7 @@
 ﻿#include "window.h"
 #include "ui_window.h"
 
+#include <QMessageBox>
 #include "../utils/utils.h"
 #include "../components/userItem.h"
 #include "../components/addItem.h"
@@ -12,8 +13,8 @@ window::window(QWidget* parent)
     ui->setupUi(this);
     initUi();
     initConnect();
+    initDB();
     addTaskbar();
-    readGitUser();
 }
 
 window::~window()
@@ -41,6 +42,13 @@ void window::initConnect()
     connect(ui->btn_close, &QToolButton::clicked, [&]() {
         closeWindow();
     });
+    connect(m_list, &QListWidget::itemClicked, this, &window::onItemClicked);
+}
+
+void window::initDB()
+{
+    m_db = new DbManager("user.sqlite");
+    readGitUser();
 }
 
 void window::addTaskbar()
@@ -112,22 +120,64 @@ void window::closeWindow()
     qApp->quit();
 }
 
-void window::readGitUser()
+void window::onItemClicked(QListWidgetItem* pItem)
 {
-    for (auto i = 0; i < 6; ++i) {
-        QListWidgetItem* item = new QListWidgetItem(m_list);
-        QString name          = QString("name%1").arg(i);
-        UserItem* userItem    = new UserItem(QPixmap(":/images/1mb.png"), name, "daydaymoyu@gmail.com", m_list);
-        item->setSizeHint(userItem->sizeHint());
-        m_list->setItemWidget(item, userItem);
+    const int itemType = pItem->data(Qt::UserRole).value<int>();
+    switch (itemType) {
+        case UserItemType: {
+            UserItem* userItem = static_cast<UserItem*>(m_list->itemWidget(pItem));
+            User user          = userItem->getUser();
+            QMessageBox::information(this, "User clicked", "User: " + user.name);
+            break;
+        }
+        case AddItemType: {
+            addGitUser();
+            break;
+        }
+        default: break;
     }
-    QListWidgetItem* pItem = new QListWidgetItem(m_list);
-    AddItem* addItem       = new AddItem();
-    pItem->setSizeHint(addItem->sizeHint());
-    m_list->setItemWidget(pItem, addItem);
 }
 
-void window::addGitUser() { }
+void window::readGitUser() const
+{
+    m_list->clear();
+    QList<User> users = m_db->getAllUsers();
+    qDebug() << users.count();
+    if (users.count() > 0) {
+        for (auto user : users) {
+            QListWidgetItem* pItem = new QListWidgetItem(m_list);
+            UserItem* userItem     = new UserItem(user, m_list);
+            pItem->setSizeHint(userItem->sizeHint());
+            pItem->setData(Qt::UserRole, QVariant::fromValue(UserItemType));
+            m_list->setItemWidget(pItem, userItem);
+        }
+    }
+
+    {
+        QListWidgetItem* pItem = new QListWidgetItem(m_list);
+        AddItem* addItem       = new AddItem();
+        pItem->setSizeHint(addItem->sizeHint());
+        pItem->setData(Qt::UserRole, QVariant::fromValue(AddItemType));
+        m_list->setItemWidget(pItem, addItem);
+
+        Qt::ItemFlags flags = pItem->flags();
+        flags &= ~Qt::ItemIsSelectable;
+        flags &= ~Qt::ItemIsEnabled;
+        pItem->setFlags(flags);
+    }
+}
+
+void window::addGitUser()
+{
+    QPixmap pixmap(":/images/1mb.png");
+    QByteArray avatar;
+    QBuffer buffer(&avatar);
+    buffer.open(QIODevice::WriteOnly);
+    pixmap.save(&buffer, "PNG");
+    User user(avatar, "ddmoyu", "daydaymoyu@gmail.com");
+    m_db->addUser(user);
+    readGitUser();
+}
 
 void window::deleteGitUser() { }
 

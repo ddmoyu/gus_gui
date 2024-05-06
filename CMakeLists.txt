@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Network)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Network Sql)
 
 qt_standard_project_setup()
 
@@ -27,7 +27,7 @@ target_sources(${PROJECT_NAME}
     "src/view/window.ui"
     "src/components/userItem.h"
     "src/components/addItem.h"
-)
+ "src/datastore/user.h" "src/datastore/db.h")
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/third_party/sass/include
@@ -46,5 +46,6 @@ target_link_libraries(
     Qt6::Gui
     Qt6::Widgets
     Qt6::Network
+    Qt6::Sql
     Sass
 )
