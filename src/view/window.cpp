@@ -5,6 +5,7 @@
 #include "../utils/utils.h"
 #include "../components/userItem.h"
 #include "../components/addItem.h"
+#include "../components/addDialog.h"
 
 window::window(QWidget* parent)
     : QWidget(parent)
@@ -14,6 +15,7 @@ window::window(QWidget* parent)
     initUi();
     initConnect();
     initDB();
+    initGit();
     addTaskbar();
 }
 
@@ -26,10 +28,12 @@ void window::initUi()
 {
     setWindowFlag(Qt::FramelessWindowHint);
     setAttribute(Qt::WA_TranslucentBackground);
-    hide();
 
     const QString style = invokeStyleSheetLoad("dark");
-    setStyleSheet(style);
+    qApp->setStyleSheet(style);
+
+    CustomDialog* dialog = new CustomDialog();
+    dialog->exec();
 
     m_list = ui->list;
 }
@@ -49,6 +53,33 @@ void window::initDB()
 {
     m_db = new DbManager("user.sqlite");
     readGitUser();
+}
+
+void window::initGit()
+{
+    const auto flag = check_git_exists();
+    if (flag) {
+        auto gc = getGitConfig();
+
+        //GitConfig cfg;
+        /*cfg.username = QString("Hunlongyu");
+        cfg.email = QString("hunlongyu@gmail.com");
+        auto res = setGitConfig(cfg);
+        qDebug() << "res："  << res;*/
+        //auto avatar = getAvatar("qq@qq.com");
+        //qDebug() << "avatar: " << avatar;
+        //QImage image;
+        //image.loadFromData(avatar); // 加载 QByteArray 数据到 QImage
+
+        //// 确定目标文件路径
+        //QString desktopPath     = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+        //QString destinationFile = desktopPath + "/image.jpg";
+
+        //image.save(destinationFile, "JPG");
+    }
+    else {
+        // todo
+    }
 }
 
 void window::addTaskbar()
@@ -169,14 +200,16 @@ void window::readGitUser() const
 
 void window::addGitUser()
 {
-    QPixmap pixmap(":/images/1mb.png");
+    CustomDialog* dialog = new CustomDialog();
+    dialog->exec();
+    /*QPixmap pixmap(":/images/1mb.png");
     QByteArray avatar;
     QBuffer buffer(&avatar);
     buffer.open(QIODevice::WriteOnly);
     pixmap.save(&buffer, "PNG");
     User user(avatar, "ddmoyu", "daydaymoyu@gmail.com");
     m_db->addUser(user);
-    readGitUser();
+    readGitUser();*/
 }
 
 void window::deleteGitUser() { }

@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.28)
 
+set(CMAKE_TOOLCHAIN_FILE "D://vcpkg//scripts//buildsystems//vcpkg.cmake" CACHE STRING "")
+
 project(gus)
 
 set(VERSION 0.0.1)
@@ -27,7 +29,9 @@ target_sources(${PROJECT_NAME}
     "src/view/window.ui"
     "src/components/userItem.h"
     "src/components/addItem.h"
- "src/datastore/user.h" "src/datastore/db.h")
+    "src/datastore/user.h"
+    "src/datastore/db.h"
+ "src/components/addDialog.h")
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/third_party/sass/include

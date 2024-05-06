@@ -44,6 +44,8 @@ private:
     void initConnect();
     // 初始化 数据库
     void initDB();
+    // 初始化 git
+    void initGit();
 
     // 添加托盘图标
     void addTaskbar();
