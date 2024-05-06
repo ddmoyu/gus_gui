@@ -12,7 +12,7 @@ public:
         : QWidget(parent)
     {
         m_add       = new QLabel;
-        QPixmap add = QPixmap(":/images/1mb.png");
+        QPixmap add = QPixmap(":/images/add.png");
         m_add->setPixmap(add.scaled(34, 34, Qt::KeepAspectRatio, Qt::SmoothTransformation));
         m_add->setObjectName("u_add");
 

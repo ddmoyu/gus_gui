@@ -41,7 +41,7 @@ inline void get_windows_taskbar_info(int& pos, int& width, int& height, int& abd
 // 加载 sass 样式
 inline QString invokeStyleSheetLoad(const QString& qValue)
 {
-    const auto path    = QStringLiteral("../../../src/assets/style/%1/%1.sass").arg(qValue);
+    const auto path    = QStringLiteral("../../src/assets/style/%1/%1.sass").arg(qValue);
     const auto root    = sass_make_file_context(path.toStdString().c_str());
     const auto context = sass_file_context_get_context(root);
     const auto option  = sass_context_get_options(context);

@@ -2,6 +2,7 @@
     <qresource prefix="/">
         <file>icon/git.png</file>
         <file>images/1mb.png</file>
+        <file>images/add.png</file>
     </qresource>
     <qresource prefix="/sass">
         <file>style/dark/dark.sass</file>

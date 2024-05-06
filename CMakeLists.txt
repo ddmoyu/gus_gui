@@ -25,7 +25,9 @@ target_sources(${PROJECT_NAME}
     "src/view/window.h"
     "src/view/window.cpp"
     "src/view/window.ui"
- "src/components/userItem.h" "src/components/addItem.h")
+    "src/components/userItem.h"
+    "src/components/addItem.h"
+)
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/third_party/sass/include
