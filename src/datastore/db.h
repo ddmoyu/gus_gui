@@ -67,14 +67,14 @@ public:
         query.exec();
     }
 
-    static void updateUser(const QUuid& uuid, const User& user)
+    static void updateUser(const User& user)
     {
         QSqlQuery query;
         query.prepare("UPDATE users SET avatar = :avatar, name = :name, email = :email WHERE uuid = :uuid");
         query.bindValue(":avatar", user.avatar);
         query.bindValue(":name", user.name);
         query.bindValue(":email", user.email);
-        query.bindValue(":uuid", uuid.toString());
+        query.bindValue(":uuid", user.uuid.toString());
         query.exec();
     }
 
@@ -84,6 +84,23 @@ public:
         QSqlQuery query;
         query.prepare("SELECT * FROM users WHERE uuid = :uuid");
         query.bindValue(":uuid", uuid.toString());
+        query.exec();
+        if (query.next()) {
+            user.uuid   = QUuid(query.value(0).toString());
+            user.avatar = query.value(1).toByteArray();
+            user.name   = query.value(2).toString();
+            user.email  = query.value(3).toString();
+        }
+        return user;
+    }
+
+    static User getUser(const QString& name, const QString& email)
+    {
+        User user;
+        QSqlQuery query;
+        query.prepare("SELECT * FROM users WHERE name = :name AND email = :email");
+        query.bindValue(":name", name);
+        query.bindValue(":email", email);
         query.exec();
         if (query.next()) {
             user.uuid   = QUuid(query.value(0).toString());

@@ -12,11 +12,12 @@ window::window(QWidget* parent)
     , ui(new Ui::window())
 {
     ui->setupUi(this);
+    initTaskbar();
     initUi();
+    initListContextMenu();
     initConnect();
     initDB();
     initGit();
-    addTaskbar();
 }
 
 window::~window()
@@ -32,10 +33,8 @@ void window::initUi()
     const QString style = invokeStyleSheetLoad("dark");
     qApp->setStyleSheet(style);
 
-    CustomDialog* dialog = new CustomDialog();
-    dialog->exec();
-
     m_list = ui->list;
+    m_list->setSelectionMode(QAbstractItemView::SingleSelection);
 }
 
 void window::initConnect()
@@ -55,34 +54,61 @@ void window::initDB()
     readGitUser();
 }
 
-void window::initGit()
+void window::initGit() const
 {
     const auto flag = check_git_exists();
     if (flag) {
         auto gc = getGitConfig();
-
-        //GitConfig cfg;
-        /*cfg.username = QString("Hunlongyu");
-        cfg.email = QString("hunlongyu@gmail.com");
-        auto res = setGitConfig(cfg);
-        qDebug() << "res："  << res;*/
-        //auto avatar = getAvatar("qq@qq.com");
-        //qDebug() << "avatar: " << avatar;
-        //QImage image;
-        //image.loadFromData(avatar); // 加载 QByteArray 数据到 QImage
-
-        //// 确定目标文件路径
-        //QString desktopPath     = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
-        //QString destinationFile = desktopPath + "/image.jpg";
-
-        //image.save(destinationFile, "JPG");
-    }
-    else {
-        // todo
+        if (!gc.email.isEmpty() && !gc.username.isEmpty()) {
+            auto _user = m_db->getUser(gc.username, gc.email);
+            if (_user.name.isEmpty() || _user.email.isEmpty()) {
+                addGitUser(gc.username, gc.email);
+                readGitUser();
+            }
+        }
     }
 }
 
-void window::addTaskbar()
+void window::initListContextMenu()
+{
+    m_list->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(m_list, &QListWidget::customContextMenuRequested, [=](const QPoint& pos) {
+        QListWidgetItem* curItem = m_list->itemAt(pos);
+        if (curItem == nullptr) {
+            return;
+        }
+        QMenu* menu         = new QMenu(m_list);
+        QAction* editAct    = new QAction(tr("Edit"), m_list);
+        QAction* deleteAct  = new QAction(tr("Delete"), m_list);
+        QAction* refreshAct = new QAction(tr("Refresh Avatar"), m_list);
+
+        connect(editAct, &QAction::triggered, [=]() {
+            UserItem* userItem = static_cast<UserItem*>(m_list->itemWidget(curItem));
+            User user          = userItem->getUser();
+            modifyGitUser(user);
+        });
+
+        connect(deleteAct, &QAction::triggered, [=]() {
+            UserItem* userItem = static_cast<UserItem*>(m_list->itemWidget(curItem));
+            User user          = userItem->getUser();
+            deleteGitUser(user);
+        });
+
+        connect(refreshAct, &QAction::triggered, [=]() {
+            UserItem* userItem = static_cast<UserItem*>(m_list->itemWidget(curItem));
+            User user          = userItem->getUser();
+            refreshGitUserAvatar(user);
+        });
+
+        menu->addAction(editAct);
+        menu->addAction(deleteAct);
+        menu->addAction(refreshAct);
+
+        menu->exec(QCursor::pos());
+    });
+}
+
+void window::initTaskbar()
 {
     m_tray = new QSystemTrayIcon(this);
     m_tray->setIcon(QIcon(":/icon/git.png"));
@@ -151,14 +177,14 @@ void window::closeWindow()
     qApp->quit();
 }
 
-void window::onItemClicked(QListWidgetItem* pItem)
+void window::onItemClicked(QListWidgetItem* pItem) const
 {
     const int itemType = pItem->data(Qt::UserRole).value<int>();
     switch (itemType) {
         case UserItemType: {
             UserItem* userItem = static_cast<UserItem*>(m_list->itemWidget(pItem));
             User user          = userItem->getUser();
-            QMessageBox::information(this, "User clicked", "User: " + user.name);
+            switchGitUser(user);
             break;
         }
         case AddItemType: {
@@ -173,11 +199,18 @@ void window::readGitUser() const
 {
     m_list->clear();
     QList<User> users = m_db->getAllUsers();
-    qDebug() << users.count();
     if (users.count() > 0) {
+        auto gc = getGitConfig();
         for (auto user : users) {
             QListWidgetItem* pItem = new QListWidgetItem(m_list);
             UserItem* userItem     = new UserItem(user, m_list);
+            if (gc.username == user.name && gc.email == user.email) {
+                pItem->setSelected(userItem);
+                QPixmap pixmap;
+                pixmap.loadFromData(user.avatar);
+                QIcon icon(pixmap);
+                m_tray->setIcon(icon);
+            }
             pItem->setSizeHint(userItem->sizeHint());
             pItem->setData(Qt::UserRole, QVariant::fromValue(UserItemType));
             m_list->setItemWidget(pItem, userItem);
@@ -198,22 +231,60 @@ void window::readGitUser() const
     }
 }
 
-void window::addGitUser()
+void window::addGitUser() const
 {
     CustomDialog* dialog = new CustomDialog();
+    User user;
     dialog->exec();
-    /*QPixmap pixmap(":/images/1mb.png");
-    QByteArray avatar;
-    QBuffer buffer(&avatar);
-    buffer.open(QIODevice::WriteOnly);
-    pixmap.save(&buffer, "PNG");
-    User user(avatar, "ddmoyu", "daydaymoyu@gmail.com");
-    m_db->addUser(user);
-    readGitUser();*/
+    dialog->getUserInfo(user);
+    if (user.avatar != "" && user.name != "" && user.email != "") {
+        m_db->addUser(user);
+        readGitUser();
+    }
 }
 
-void window::deleteGitUser() { }
+void window::addGitUser(const QString& name, const QString& email) const
+{
+    User user;
+    const auto avatar = getAvatar(email);
+    user.avatar       = avatar;
+    user.name         = name;
+    user.email        = email;
+    m_db->addUser(user);
+    readGitUser();
+}
 
-void window::switchGitUser() { }
+void window::deleteGitUser(const User& user) const
+{
+    m_db->deleteUser(user.uuid);
+    readGitUser();
+}
 
-void window::modifyGitUser() { }
+void window::switchGitUser(const User& user) const
+{
+    GitConfig cfg;
+    cfg.username = user.name;
+    cfg.email    = user.email;
+    auto res     = setGitConfig(cfg);
+    readGitUser();
+}
+
+void window::modifyGitUser(User user) const
+{
+    CustomDialog* dialog = new CustomDialog();
+    dialog->setUserInfo(user);
+    dialog->exec();
+    dialog->getUserInfo(user);
+    if (user.avatar != "" && user.name != "" && user.email != "") {
+        m_db->updateUser(user);
+        readGitUser();
+    }
+}
+
+void window::refreshGitUserAvatar(User user) const
+{
+    const auto avatar = getAvatar(user.email);
+    user.avatar       = avatar;
+    m_db->updateUser(user);
+    readGitUser();
+}

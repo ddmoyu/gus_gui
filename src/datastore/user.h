@@ -7,11 +7,11 @@ class User
 {
 public:
     QUuid uuid;
-    QByteArray avatar;
-    QString name;
-    QString email;
+    QByteArray avatar{""};
+    QString name{""};
+    QString email{""};
 
-    User() { }
+    User() : uuid(QUuid::createUuid()) { }
 
     User(QUuid uuid, QByteArray avatar, QString name, QString email)
         : uuid(std::move(uuid))

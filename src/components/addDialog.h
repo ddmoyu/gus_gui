@@ -16,6 +16,9 @@ public:
     QByteArray m_avatar;
     QString m_name;
     QString m_email;
+    QLabel* imageLabel;
+    QLineEdit* nameLineEdit;
+    QLineEdit* emailLineEdit;
 
     CustomDialog(QWidget* parent = nullptr)
         : QDialog(parent)
@@ -29,7 +32,7 @@ public:
         horLayout->setObjectName("horLayout");
 
         // 使用QLabel显示图片
-        QLabel* imageLabel = new QLabel;
+        imageLabel = new QLabel;
         imageLabel->setObjectName("avatar");
         imageLabel->setText("Avatar");
         imageLabel->setAlignment(Qt::AlignCenter);
@@ -38,11 +41,11 @@ public:
         // 表单部分
         QVBoxLayout* formLayout = new QVBoxLayout;
         QLabel* nameLabel       = new QLabel("Name:");
-        QLineEdit* nameLineEdit = new QLineEdit;
+        nameLineEdit = new QLineEdit;
         formLayout->addWidget(nameLabel);
         formLayout->addWidget(nameLineEdit);
         QLabel* emailLabel       = new QLabel("Email:");
-        QLineEdit* emailLineEdit = new QLineEdit;
+        emailLineEdit = new QLineEdit;
         formLayout->addWidget(emailLabel);
         formLayout->addWidget(emailLineEdit);
         horLayout->addLayout(formLayout);
@@ -63,18 +66,21 @@ public:
         buttonBox->addWidget(cancelButton);
 
         // 连接信号槽
-        connect(okButton, &QPushButton::clicked, this, [nameLineEdit, emailLineEdit, imageLabel, this]() {
-            m_name = nameLineEdit->text();
+        connect(okButton, &QPushButton::clicked, this, [okButton, this]() {
+            m_name  = nameLineEdit->text();
             m_email = emailLineEdit->text();
             if (!m_name.isEmpty() && !m_email.isEmpty()) {
-                QRegularExpression emailRegex("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z|a-z]{2,}\\b");
-                if(emailRegex.match(m_email).hasMatch()){
-                    m_avatar   = getAvatar(m_email);
+                QRegularExpression emailRegex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+                if (emailRegex.match(m_email).hasMatch()) {
+                    m_avatar = getAvatar(m_email);
                     QPixmap img;
                     img.loadFromData(m_avatar);
                     imageLabel->setPixmap(img);
                     imageLabel->setScaledContents(true);
-                    accepted();
+                    okButton->setText("Verifying...");
+                    QTimer::singleShot(3000, [this]() {
+                        accept();
+                    });
                 }
             }
         });
@@ -84,11 +90,24 @@ public:
         this->setLayout(layout);
     }
 
-    void getUserInfo(QByteArray& avatar, QString& name, QString& email) const
+    void getUserInfo(User& user) const
     {
-        avatar = m_avatar;
-        name = m_name;
-        email = m_email;
+        user.avatar = m_avatar;
+        user.name = m_name;
+        user.email = m_email;
+    }
+
+    void setUserInfo(const User& user)
+    {
+        m_avatar = user.avatar;
+        m_name = user.name;
+        m_email = user.email;
+        QPixmap img;
+        img.loadFromData(m_avatar);
+        imageLabel->setPixmap(img);
+        imageLabel->setScaledContents(true);
+        nameLineEdit->setText(m_name);
+        emailLineEdit->setText(m_email);
     }
 
     void paintEvent(QPaintEvent* event) override

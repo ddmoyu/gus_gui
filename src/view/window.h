@@ -45,10 +45,12 @@ private:
     // 初始化 数据库
     void initDB();
     // 初始化 git
-    void initGit();
+    void initGit() const;
+    // 初始化 list 右键菜单
+    void initListContextMenu();
 
     // 添加托盘图标
-    void addTaskbar();
+    void initTaskbar();
     // 添加托盘图标 点击事件
     void addTaskbarMouseLeftBtnHandle();
     // 添加托盘图标 右键菜单及其事件
@@ -59,16 +61,20 @@ private:
     // 关闭视窗
     static void closeWindow();
     // git item 点击事件
-    void onItemClicked(QListWidgetItem* pItem);
+    void onItemClicked(QListWidgetItem* pItem) const;
 
     // 读取 git 用户
     void readGitUser() const;
     // 添加 git 用户
-    void addGitUser();
+    void addGitUser() const;
+    // 添加 git 用户
+    void addGitUser(const QString& name, const QString& email) const;
     // 删除 git 用户
-    void deleteGitUser();
+    void deleteGitUser(const User& user) const;
     // 切换 git 用户
-    void switchGitUser();
+    void switchGitUser(const User& user) const;
     // 修改 git 用户
-    void modifyGitUser();
+    void modifyGitUser(User user) const;
+    // 刷新 git 用户头像
+    void refreshGitUserAvatar(User user) const;
 };
