@@ -6,6 +6,7 @@
 #include <QListWidget>
 #include <QSystemTrayIcon>
 #include "../datastore/db.h"
+#include "../components/addDialog.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui
@@ -34,7 +35,9 @@ private:
     QSystemTrayIcon* m_tray{nullptr};
     QMenu* m_tray_menu{nullptr};
 
-    QListWidget* m_list;
+    QListWidget* m_list{nullptr};
+     CustomDialog* m_dialog{nullptr};
+    QMetaObject::Connection m_connection;
 
     DbManager* m_db{nullptr};
 
@@ -61,12 +64,12 @@ private:
     // 关闭视窗
     static void closeWindow();
     // git item 点击事件
-    void onItemClicked(QListWidgetItem* pItem) const;
+    void onItemClicked(QListWidgetItem* pItem);
 
     // 读取 git 用户
     void readGitUser() const;
     // 添加 git 用户
-    void addGitUser() const;
+    void addGitUser();
     // 添加 git 用户
     void addGitUser(const QString& name, const QString& email) const;
     // 删除 git 用户
@@ -74,7 +77,7 @@ private:
     // 切换 git 用户
     void switchGitUser(const User& user) const;
     // 修改 git 用户
-    void modifyGitUser(User user) const;
+    void modifyGitUser(const User& user);
     // 刷新 git 用户头像
     void refreshGitUserAvatar(User user) const;
 

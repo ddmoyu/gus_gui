@@ -4,10 +4,12 @@
 #include <shellapi.h>
 #include <sass.h>
 #include <QString>
-#include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QObject>
+#include <QProcess>
+#include <QFile>
+#include <QEventLoop>
 
 // 检查是否 开机自启
 inline bool check_auto_start()

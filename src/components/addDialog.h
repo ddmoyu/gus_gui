@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <QDialog>
+#include <QKeyEvent>
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QPainter>
@@ -8,12 +9,18 @@
 #include <QPushButton>
 #include <QStyleOption>
 #include <QRegularExpression>
+#include <QObject>
+#include <QTimer>
+#include <QUuid>
 #include "../utils/utils.h"
+#include "../datastore/user.h"
 
 class CustomDialog : public QDialog
 {
+    Q_OBJECT
 public:
     QByteArray m_avatar;
+    QUuid m_uuid;
     QString m_name;
     QString m_email;
     QLabel* imageLabel;
@@ -25,7 +32,7 @@ public:
     {
         setObjectName("CustomDialog");
         setWindowTitle(tr("Add User"));
-        setWindowFlags(Qt::FramelessWindowHint);
+        setWindowFlags(Qt::FramelessWindowHint | Qt::Tool);
         setAttribute(Qt::WA_TranslucentBackground);
         QVBoxLayout* layout    = new QVBoxLayout;
         QHBoxLayout* horLayout = new QHBoxLayout;
@@ -78,14 +85,17 @@ public:
                     imageLabel->setPixmap(img);
                     imageLabel->setScaledContents(true);
                     okButton->setText("Verifying...");
-                    QTimer::singleShot(3000, [this]() {
-                        accept();
+                    QTimer::singleShot(3000, [this, okButton]() {
+                        hide();
+                        emit dialogAccepted();
+                        okButton->setText("OK");
                     });
                 }
             }
         });
         connect(cancelButton, &QPushButton::clicked, [this]() {
-            reject();
+            hide();
+            emit dialogRejected();
         });
 
         layout->addLayout(buttonBox);
@@ -99,8 +109,19 @@ public:
         user.email  = m_email;
     }
 
+    User getUserInfo() const
+    {
+        User user;
+        user.uuid   = m_uuid;
+        user.avatar = m_avatar;
+        user.name   = m_name;
+        user.email  = m_email;
+        return user;
+    }
+
     void setUserInfo(const User& user)
     {
+        m_uuid   = user.uuid;
         m_avatar = user.avatar;
         m_name   = user.name;
         m_email  = user.email;
@@ -112,11 +133,37 @@ public:
         emailLineEdit->setText(m_email);
     }
 
+    void clear()
+    {
+        m_avatar = "";
+        m_name   = "";
+        m_email  = "";
+        imageLabel->clear();
+        nameLineEdit->setText("");
+        emailLineEdit->setText("");
+    }
+
+signals:
+    void dialogAccepted();
+    void dialogRejected();
+
+protected:
     void paintEvent(QPaintEvent* event) override
     {
         QStyleOption opt;
         opt.initFrom(this);
         QPainter p(this);
         style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
+    }
+
+    void keyPressEvent(QKeyEvent* event) override
+    {
+        // 禁用 ESC 键退出
+        if (event->key() == Qt::Key_Escape) {
+            event->ignore();
+        }
+        else {
+            QDialog::keyPressEvent(event);
+        }
     }
 };

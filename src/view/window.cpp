@@ -7,7 +7,6 @@
 #include "../utils/utils.h"
 #include "../components/userItem.h"
 #include "../components/addItem.h"
-#include "../components/addDialog.h"
 
 window::window(QWidget* parent)
     : QWidget(parent)
@@ -30,6 +29,7 @@ window::~window()
 void window::initUi()
 {
     setWindowFlags(Qt::FramelessWindowHint | Qt::Tool);
+    // setWindowFlags(Qt::FramelessWindowHint);
     setAttribute(Qt::WA_TranslucentBackground);
     setFocusPolicy(Qt::StrongFocus);
 
@@ -188,7 +188,7 @@ void window::closeWindow()
     qApp->quit();
 }
 
-void window::onItemClicked(QListWidgetItem* pItem) const
+void window::onItemClicked(QListWidgetItem* pItem)
 {
     const int itemType = pItem->data(Qt::UserRole).value<int>();
     switch (itemType) {
@@ -244,16 +244,23 @@ void window::readGitUser() const
     }
 }
 
-void window::addGitUser() const
+void window::addGitUser()
 {
-    CustomDialog* dialog = new CustomDialog();
-    User user;
-    dialog->exec();
-    dialog->getUserInfo(user);
-    if (user.avatar != "" && user.name != "" && user.email != "") {
-        m_db->addUser(user);
-        readGitUser();
+    if (m_dialog == nullptr) {
+        m_dialog = new CustomDialog();
     }
+    m_connection = connect(m_dialog, &CustomDialog::dialogAccepted, [this] {
+        User user;
+        m_dialog->getUserInfo(user);
+        if (user.avatar != "" && user.name != "" && user.email != "") {
+            m_db->addUser(user);
+            readGitUser();
+        }
+    });
+    m_dialog->clear();
+    m_dialog->show();
+    m_dialog->exec();
+    disconnect(m_connection);
 }
 
 void window::addGitUser(const QString& name, const QString& email) const
@@ -278,20 +285,27 @@ void window::switchGitUser(const User& user) const
     GitConfig cfg;
     cfg.username = user.name;
     cfg.email    = user.email;
-    auto res     = setGitConfig(cfg);
-    readGitUser();
-}
-
-void window::modifyGitUser(User user) const
-{
-    CustomDialog* dialog = new CustomDialog();
-    dialog->setUserInfo(user);
-    dialog->exec();
-    dialog->getUserInfo(user);
-    if (user.avatar != "" && user.name != "" && user.email != "") {
-        m_db->updateUser(user);
+    if (setGitConfig(cfg)) {
         readGitUser();
     }
+}
+
+void window::modifyGitUser(const User& user)
+{
+    if (m_dialog == nullptr) {
+        m_dialog = new CustomDialog();
+    }
+    connect(m_dialog, &CustomDialog::dialogAccepted, [this] {
+        auto _user = m_dialog->getUserInfo();
+        if (_user.avatar != "" && _user.name != "" && _user.email != "") {
+            m_db->updateUser(_user);
+            readGitUser();
+        }
+    });
+    m_dialog->setUserInfo(user);
+    m_dialog->show();
+    m_dialog->exec();
+    disconnect(m_connection);
 }
 
 void window::refreshGitUserAvatar(User user) const
