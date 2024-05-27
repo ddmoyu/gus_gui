@@ -77,4 +77,7 @@ private:
     void modifyGitUser(User user) const;
     // 刷新 git 用户头像
     void refreshGitUserAvatar(User user) const;
+
+protected:
+    void focusOutEvent(QFocusEvent* event) override;
 };

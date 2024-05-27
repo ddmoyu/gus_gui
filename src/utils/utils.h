@@ -25,7 +25,6 @@ inline bool check_git_exists()
     process.start("where", QStringList() << "git");
     process.waitForFinished();
     QString out(process.readAllStandardOutput());
-    qDebug() << "where git: " << out.trimmed();
     if (out.trimmed() != "") {
         return true;
     }
@@ -55,20 +54,76 @@ inline void get_windows_taskbar_info(int& pos, int& width, int& height, int& abd
 inline QString invokeStyleSheetLoad(const QString& qValue)
 {
     const auto path    = QStringLiteral("../../src/assets/style/%1/%1.sass").arg(qValue);
-    const auto root    = sass_make_file_context(path.toStdString().c_str());
-    const auto context = sass_file_context_get_context(root);
-    const auto option  = sass_context_get_options(context);
-    sass_option_set_precision(option, 2);
-    sass_option_set_output_style(option, SASS_STYLE_COMPACT);
-    sass_compile_file_context(root);
+    const auto ctx     = sass_make_file_context(path.toStdString().c_str());
+    const auto context = sass_file_context_get_context(ctx);
+    const auto options = sass_context_get_options(context);
+    sass_option_set_precision(options, 2);
+    sass_option_set_output_style(options, SASS_STYLE_COMPACT);
+    sass_compile_file_context(ctx);
     if (sass_context_get_error_status(context) != 0) {
         qFatal(sass_context_get_error_message(context));
+        sass_delete_file_context(ctx);
+        return QString();
+    }
+    const auto styleSheet = QString::fromStdString(sass_context_get_output_string(context));
+    sass_delete_file_context(ctx);
+    return styleSheet;
+}
+
+// 从 qrc 资源里加载样式
+inline QString loadStyleSheetFromQrc(const QString& theme)
+{
+    const auto path = QString(":/sass/style/%1/%1.scss").arg(theme);
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qFatal("Failed to open file.");
+        return QString();
+    }
+    QTextStream in(&file);
+    const auto scssContent = in.readAll();
+    file.close();
+
+    // Create a libsass context
+    auto scss_byte = scssContent.toUtf8();
+    char* input    = _strdup(scss_byte.constData());
+    if (!input) {
+        qFatal("Failed to allocate memory.");
         return QString();
     }
 
-    const auto styleSheet = QString::fromStdString(sass_context_get_output_string(context));
-    sass_delete_file_context(root);
-    return styleSheet;
+    struct Sass_Data_Context* data_ctx = sass_make_data_context(input);
+    if (!data_ctx) {
+        free(input);
+        qFatal("Failed to create Sass_Data_Context.");
+        return QString();
+    }
+
+    struct Sass_Context* ctx = sass_data_context_get_context(data_ctx);
+    if (!ctx) {
+        sass_delete_data_context(data_ctx);
+        free(input);
+        qFatal("Failed to create Sass_Context.");
+        return QString();
+    }
+
+    // Compile the SASS to CSS
+    int status = sass_compile_data_context(data_ctx);
+
+    // Check for errors
+    if (status != 0) {
+        qWarning() << "Error compiling SCSS:" << sass_context_get_error_message(ctx);
+        sass_delete_data_context(data_ctx);
+        free(input);
+        return QString();
+    }
+
+    // Get the result
+    const char* css   = sass_context_get_output_string(ctx);
+    QString cssString = QString(css);
+
+    // Cleanup
+    sass_delete_data_context(data_ctx);
+    return cssString;
 }
 
 struct GitConfig
@@ -99,8 +154,6 @@ inline GitConfig getGitConfig()
     GitConfig cfg;
     cfg.username = nameOut.trimmed();
     cfg.email    = emailOut.trimmed();
-    qDebug() << "name: " << cfg.username;
-    qDebug() << "email: " << cfg.email;
     return cfg;
 }
 
@@ -108,11 +161,17 @@ inline GitConfig getGitConfig()
 inline bool setGitConfig(const GitConfig& cfg)
 {
     QProcess process;
-    process.start("git", QStringList() << "config" << "--global" << "user.name" << cfg.username);
+    process.start("git",
+                  QStringList() << "config"
+                                << "--global"
+                                << "user.name" << cfg.username);
     process.waitForFinished();
 
-    process.start("git", QStringList() << "config" << "--global" << "user.email" << cfg.email);
-    process.waitForFinished();  // 等待进程结束
+    process.start("git",
+                  QStringList() << "config"
+                                << "--global"
+                                << "user.email" << cfg.email);
+    process.waitForFinished(); // 等待进程结束
     process.close();
 
     auto user = getGitConfig();
@@ -125,18 +184,18 @@ inline bool setGitConfig(const GitConfig& cfg)
 // 获取 Gravatar 头像
 inline QByteArray getAvatar(const QString& _email)
 {
-    QString email = _email.trimmed().toLower();
-    QByteArray emailData = email.toUtf8();
-    QByteArray hash = QCryptographicHash::hash(emailData, QCryptographicHash::Md5).toHex();
-    QString gravatarUrl = QString("https://www.gravatar.com/avatar/%1?d=identicon").arg(QString(hash));
-    QNetworkAccessManager * manager = new QNetworkAccessManager();
+    QString email                  = _email.trimmed().toLower();
+    QByteArray emailData           = email.toUtf8();
+    QByteArray hash                = QCryptographicHash::hash(emailData, QCryptographicHash::Md5).toHex();
+    QString gravatarUrl            = QString("https://www.gravatar.com/avatar/%1?d=identicon").arg(QString(hash));
+    QNetworkAccessManager* manager = new QNetworkAccessManager();
     QUrl url(gravatarUrl);
     QNetworkRequest request(url);
     QNetworkReply* reply = manager->get(request);
     QEventLoop eventLoop;
     QObject::connect(reply, &QNetworkReply::finished, &eventLoop, &QEventLoop::quit);
     eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
-    
+
     QByteArray avatarData;
     if (reply->error() == QNetworkReply::NoError) {
         avatarData = reply->readAll();

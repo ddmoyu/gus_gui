@@ -41,11 +41,11 @@ public:
         // 表单部分
         QVBoxLayout* formLayout = new QVBoxLayout;
         QLabel* nameLabel       = new QLabel("Name:");
-        nameLineEdit = new QLineEdit;
+        nameLineEdit            = new QLineEdit;
         formLayout->addWidget(nameLabel);
         formLayout->addWidget(nameLineEdit);
-        QLabel* emailLabel       = new QLabel("Email:");
-        emailLineEdit = new QLineEdit;
+        QLabel* emailLabel = new QLabel("Email:");
+        emailLineEdit      = new QLineEdit;
         formLayout->addWidget(emailLabel);
         formLayout->addWidget(emailLineEdit);
         horLayout->addLayout(formLayout);
@@ -84,7 +84,9 @@ public:
                 }
             }
         });
-        connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
+        connect(cancelButton, &QPushButton::clicked, [this]() {
+            reject();
+        });
 
         layout->addLayout(buttonBox);
         this->setLayout(layout);
@@ -93,15 +95,15 @@ public:
     void getUserInfo(User& user) const
     {
         user.avatar = m_avatar;
-        user.name = m_name;
-        user.email = m_email;
+        user.name   = m_name;
+        user.email  = m_email;
     }
 
     void setUserInfo(const User& user)
     {
         m_avatar = user.avatar;
-        m_name = user.name;
-        m_email = user.email;
+        m_name   = user.name;
+        m_email  = user.email;
         QPixmap img;
         img.loadFromData(m_avatar);
         imageLabel->setPixmap(img);

@@ -2,6 +2,8 @@
 #include "ui_window.h"
 
 #include <QMessageBox>
+#include <QDesktopServices>
+#include <QMouseEvent>
 #include "../utils/utils.h"
 #include "../components/userItem.h"
 #include "../components/addItem.h"
@@ -27,11 +29,14 @@ window::~window()
 
 void window::initUi()
 {
-    setWindowFlag(Qt::FramelessWindowHint);
+    setWindowFlags(Qt::FramelessWindowHint | Qt::Tool);
     setAttribute(Qt::WA_TranslucentBackground);
+    setFocusPolicy(Qt::StrongFocus);
 
-    const QString style = invokeStyleSheetLoad("dark");
-    qApp->setStyleSheet(style);
+    /*const QString style = invokeStyleSheetLoad("dark");
+    qApp->setStyleSheet(style);*/
+    const QString css = loadStyleSheetFromQrc("dark");
+    qApp->setStyleSheet(css);
 
     m_list = ui->list;
     m_list->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -39,6 +44,9 @@ void window::initUi()
 
 void window::initConnect()
 {
+    connect(ui->btn_more, &QToolButton::clicked, [&]() {
+        QDesktopServices::openUrl(QUrl("https://github.com/ddmoyu/gus_gui"));
+    });
     connect(ui->btn_hide, &QToolButton::clicked, [&]() {
         showWindow(false);
     });
@@ -77,10 +85,11 @@ void window::initListContextMenu()
         if (curItem == nullptr) {
             return;
         }
-        QMenu* menu         = new QMenu(m_list);
-        QAction* editAct    = new QAction(tr("Edit"), m_list);
-        QAction* deleteAct  = new QAction(tr("Delete"), m_list);
-        QAction* refreshAct = new QAction(tr("Refresh Avatar"), m_list);
+        QMenu* menu = new QMenu(m_list);
+        menu->setWindowFlags(Qt::Popup);
+        QAction* editAct    = new QAction(tr("编辑"), m_list);
+        QAction* deleteAct  = new QAction(tr("删除"), m_list);
+        QAction* refreshAct = new QAction(tr("刷新头像"), m_list);
 
         connect(editAct, &QAction::triggered, [=]() {
             UserItem* userItem = static_cast<UserItem*>(m_list->itemWidget(curItem));
@@ -105,6 +114,7 @@ void window::initListContextMenu()
         menu->addAction(refreshAct);
 
         menu->exec(QCursor::pos());
+        setFocus();
     });
 }
 
@@ -133,7 +143,7 @@ void window::addTaskbarMouseRightBtnHandle()
         toggle_auto_start(true);
     });
 
-    QAction* quit = new QAction("Quit", this);
+    QAction* quit = new QAction(tr("退出"), this);
     connect(quit, &QAction::triggered, [&]() {
         qApp->quit();
     });
@@ -170,6 +180,7 @@ void window::showWindow(bool flag)
     show();
     raise();
     activateWindow();
+    setFocus();
 }
 
 void window::closeWindow()
@@ -210,6 +221,8 @@ void window::readGitUser() const
                 pixmap.loadFromData(user.avatar);
                 QIcon icon(pixmap);
                 m_tray->setIcon(icon);
+                QString tips = QString("%1\n%2").arg(user.name).arg(user.email);
+                m_tray->setToolTip(tips);
             }
             pItem->setSizeHint(userItem->sizeHint());
             pItem->setData(Qt::UserRole, QVariant::fromValue(UserItemType));
@@ -287,4 +300,13 @@ void window::refreshGitUserAvatar(User user) const
     user.avatar       = avatar;
     m_db->updateUser(user);
     readGitUser();
+}
+
+void window::focusOutEvent(QFocusEvent* event)
+{
+    QWidget::focusOutEvent(event);
+    qDebug() << event->reason();
+    if (event->reason() == Qt::MouseFocusReason) {
+        // hide();
+    }
 }

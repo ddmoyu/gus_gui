@@ -107,11 +107,11 @@
          <item row="0" column="2">
           <widget class="QToolButton" name="btn_more">
            <property name="text">
-            <string>-</string>
+            <string/>
            </property>
            <property name="icon">
             <iconset resource="../assets/assets.qrc">
-             <normaloff>:/images/more.png</normaloff>:/images/more.png</iconset>
+             <normaloff>:/images/link.png</normaloff>:/images/link.png</iconset>
            </property>
            <property name="iconSize">
             <size>

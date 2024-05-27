@@ -31,16 +31,26 @@ target_sources(${PROJECT_NAME}
     "src/components/addItem.h"
     "src/datastore/user.h"
     "src/datastore/db.h"
- "src/components/addDialog.h")
+    "src/components/addDialog.h"
+)
 
 include_directories(
-    ${PROJECT_SOURCE_DIR}/third_party/sass/include
+    ${PROJECT_SOURCE_DIR}/third_party/libsass/include
 )
+
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(LIBSASS_LIB_DIR ${PROJECT_SOURCE_DIR}/third_party/libsass/lib/debug)
+    set(LIBSASS_BIN_DIR ${PROJECT_SOURCE_DIR}/third_party/libsass/bin/debug)
+else()
+    set(LIBSASS_LIB_DIR ${PROJECT_SOURCE_DIR}/third_party/libsass/lib/release)
+    set(LIBSASS_BIN_DIR ${PROJECT_SOURCE_DIR}/third_party/libsass/bin/release)
+endif()
 
 target_link_directories(
     ${PROJECT_NAME}
     PRIVATE
-    ${PROJECT_SOURCE_DIR}/third_party/sass/lib
+    ${LIBSASS_LIB_DIR}
 )
 
 target_link_libraries(
@@ -51,5 +61,9 @@ target_link_libraries(
     Qt6::Widgets
     Qt6::Network
     Qt6::Sql
-    Sass
+    libsass
+)
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy ${LIBSASS_BIN_DIR}/libsass.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>
 )
