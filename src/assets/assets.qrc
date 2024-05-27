@@ -8,8 +8,6 @@
         <file>images/share.png</file>
     </qresource>
     <qresource prefix="/sass">
-        <file>style/dark/dark.sass</file>
-        <file>style/dark/variables.sass</file>
         <file>style/light/light.sass</file>
         <file>style/light/variables.sass</file>
         <file>style/dark/dark.scss</file>
