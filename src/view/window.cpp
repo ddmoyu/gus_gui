@@ -131,7 +131,12 @@ void window::addTaskbarMouseLeftBtnHandle()
 {
     connect(m_tray, &QSystemTrayIcon::activated, [&](QSystemTrayIcon::ActivationReason reason) {
         if (reason == QSystemTrayIcon::Trigger) {
-            showWindow(true);
+            if (isVisible()) {
+                showWindow(false);
+            }
+            else {
+                showWindow(true);
+            }
         }
     });
 }
@@ -139,9 +144,19 @@ void window::addTaskbarMouseLeftBtnHandle()
 void window::addTaskbarMouseRightBtnHandle()
 {
     QAction* auto_star = new QAction(tr("开机自启"), this);
+    auto_star->setCheckable(true);
     connect(auto_star, &QAction::triggered, [&]() {
-        toggle_auto_start(true);
+        const auto flag = is_auto_start_enabled();
+        bool isAuto = toggle_auto_start(!flag);
+        auto_star->setChecked(isAuto);
     });
+
+    if (is_auto_start_enabled()) {
+        auto_star->setChecked(true);
+    }
+    else {
+        auto_star->setChecked(false);
+    }
 
     QAction* quit = new QAction(tr("退出"), this);
     connect(quit, &QAction::triggered, [&]() {

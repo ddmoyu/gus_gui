@@ -18,7 +18,17 @@ qt_standard_project_setup()
 
 qt6_add_resources(QRC_SOURCES "src/assets/assets.qrc")
 
-qt_add_executable(${PROJECT_NAME} ${QRC_SOURCES})
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/out/build/Release")
+else()
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/out/build/Debug")
+endif()
+
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    qt_add_executable(${PROJECT_NAME} WIN32 ${QRC_SOURCES})
+else()
+    qt_add_executable(${PROJECT_NAME} ${QRC_SOURCES})
+endif()
 
 target_sources(${PROJECT_NAME}
     PRIVATE
@@ -32,12 +42,12 @@ target_sources(${PROJECT_NAME}
     "src/datastore/user.h"
     "src/datastore/db.h"
     "src/components/addDialog.h"
+    "src/assets/resource.rc"
 )
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/third_party/libsass/include
 )
-
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(LIBSASS_LIB_DIR ${PROJECT_SOURCE_DIR}/third_party/libsass/lib/debug)
@@ -64,7 +74,14 @@ target_link_libraries(
     libsass
 )
 
+set(EXECUTABLE_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME}.exe")
+set(WINDEPLOYQT_EXECUTABLE "D:/Qt/6.6.3/msvc2019_64/bin/windeployqt.exe")
+set(INNO_SETUP_EXECUTABLE "C:/Program Files (x86)/Inno Setup 6/ISCC.exe")
+set(INNO_SETUP_SCRIPT "${PROJECT_SOURCE_DIR}/setup/setup.iss")
+
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy ${LIBSASS_BIN_DIR}/libsass.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/third_party/openssl/bin $<TARGET_FILE_DIR:${PROJECT_NAME}>
+    COMMAND ${WINDEPLOYQT_EXECUTABLE} ${EXECUTABLE_PATH} --compiler-runtime
+    COMMAND ${INNO_SETUP_EXECUTABLE} /dMyAppVersion=${VERSION} ${INNO_SETUP_SCRIPT}
 )

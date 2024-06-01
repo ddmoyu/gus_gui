@@ -18,8 +18,60 @@ inline bool check_auto_start()
 }
 
 // 开机自启 管理
-inline void toggle_auto_start(bool flag) { }
+inline bool toggle_auto_start(bool flag)
+{
+    const char* appName = "gus";
 
+    // 获取当前程序的路径
+    char appPath[MAX_PATH];
+    if (GetModuleFileNameA(nullptr, appPath, MAX_PATH) == 0) {
+        return false;
+    }
+
+    HKEY hKey;
+    // 打开注册表项
+    if (RegOpenKeyExA(HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Run", 0, KEY_WRITE, &hKey) != ERROR_SUCCESS) {
+        return false;
+    }
+
+    if (flag) {
+        // 设置开机自启动
+        if (RegSetValueExA(hKey, appName, 0, REG_SZ, reinterpret_cast<LPBYTE>(appPath), strlen(appPath) + 1) != ERROR_SUCCESS) {
+            RegCloseKey(hKey);
+            return false;
+        }
+    } else {
+        // 取消开机自启动
+        if (RegDeleteValueA(hKey, appName) != ERROR_SUCCESS) {
+            RegCloseKey(hKey);
+            return false;
+        }
+    }
+
+    // 关闭注册表项
+    RegCloseKey(hKey);
+    return true;
+}
+// 检查是否有开机自启
+inline bool is_auto_start_enabled()
+{
+    const char* appName = "gus";
+        HKEY hKey;
+        
+        if (RegOpenKeyExA(HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Run", 0, KEY_READ, &hKey) != ERROR_SUCCESS) {
+            return false;
+        }
+
+        DWORD type = 0;
+        DWORD size = 0;
+        if (RegQueryValueExA(hKey, appName, nullptr, &type, nullptr, &size) == ERROR_SUCCESS) {
+            RegCloseKey(hKey);
+            return true;
+        }
+
+        RegCloseKey(hKey);
+        return false;
+}
 // 检查是否存在 Git
 inline bool check_git_exists()
 {
