@@ -3,7 +3,7 @@
 
 #pragma parseroption -pMyAppVersion
 
-#define MyAppName "gus"
+#define MyAppName "Gus"
 #ifndef MyAppVersion
   #define MyAppVersion "0.0.2"
 #endif
@@ -24,13 +24,13 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}
 DisableProgramGroupPage=yes
-LicenseFile=E:\MoYu\gus\LICENSE
+LicenseFile=..\LICENSE
 ; Remove the following line to run in administrative install mode (install for all users.)
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
-OutputDir=E:\MoYu\gus\setup\Output
-OutputBaseFilename={#MyAppName}_{#MyAppVersion}_setup_x64 
-SetupIconFile=E:\MoYu\gus\src\assets\icon\git.ico
+OutputDir=.\Output
+OutputBaseFilename={#MyAppName} {#MyAppVersion}-x64 
+SetupIconFile=..\src\assets\icon\git.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
@@ -43,7 +43,7 @@ Name: "chinesesimplified"; MessagesFile: "compiler:Languages\ChineseSimplified.i
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "E:\MoYu\gus\out\build\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\out\build\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
